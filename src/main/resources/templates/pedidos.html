@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Pedidos Pizza</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+
+<body>
+
+<!-- NAVBAR -->
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <div class="container-fluid">
+        <a class="navbar-brand" th:href="@{/}">Bona Pizza</a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav">
+                <li class="nav-item">
+                    <a class="nav-link" th:href="@{/}">Inicio</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link active" th:href="@{/pedidos}">Pedidos</a>
+                </li>
+            </ul>
+            <button id="toggleTheme" class="btn btn-outline-light ms-auto">🌙</button>
+        </div>
+    </div>
+</nav>
+
+<!-- CONTENIDO -->
+<div class="container mt-5">
+
+    <h1 class="mb-4">Pedidos de Pizza</h1>
+
+    <h3>Pizzas disponibles: <span th:text="${restantes}"></span></h3>
+
+    <!-- ERROR -->
+    <div th:if="${error}" class="alert alert-danger">
+        <span th:text="${error}"></span>
+    </div>
+
+    <!-- FORMULARIO -->
+    <form th:action="@{/guardarPedido}" method="post" id="pedidoForm">
+
+        <div class="mb-3">
+            <label class="form-label">Nombre</label>
+            <input type="text" name="nombre" id="nombre" class="form-control" required>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Apellido</label>
+            <input type="text" name="apellido" id="apellido" class="form-control" required>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Correo</label>
+            <input type="email" name="correo" id="correo" class="form-control" required>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Sabor</label>
+            <select name="sabor" id="sabor" class="form-select" required>
+                <option value="">Selecciona un sabor</option>
+                <option>Hawaiana</option>
+                <option>Pepperoni</option>
+                <option>Mexicana</option>
+                <option>4 Quesos</option>
+                <option>Suprema</option>
+                <option>Vegetariana</option>
+            </select>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Dirección</label>
+            <input type="text" name="direccion" id="direccion" class="form-control" required>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Hora</label>
+            <input type="time" name="hora" id="hora" class="form-control" required>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Cantidad</label>
+            <input type="number" name="cantidad" id="cantidad" class="form-control" min="1" required>
+        </div>
+
+        <button class="btn btn-primary">Hacer Pedido</button>
+
+    </form>
+
+    <hr>
+
+    <!-- TARJETAS DE ANÁLISIS -->
+    <div class="row mt-4">
+
+        <div class="col-md-4 mb-3">
+            <div class="card bg-dark text-white shadow">
+                <div class="card-body text-center">
+                    <h5>Total Pedidos</h5>
+                    <h2 th:text="${totalPedidos}"></h2>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4 mb-3">
+            <div class="card bg-primary text-white shadow">
+                <div class="card-body text-center">
+                    <h5>Pizzas Vendidas</h5>
+                    <h2 th:text="${totalPizzas}"></h2>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4 mb-3">
+            <div class="card bg-danger text-white shadow">
+                <div class="card-body text-center">
+                    <h5>Pizza Más Vendida</h5>
+                    <h2 th:text="${saborTop}"></h2>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- GRÁFICA -->
+    <div class="card mt-4 shadow">
+        <div class="card-header">
+            <h4 id="tituloReporte">Reporte de Ventas</h4>
+        </div>
+        <div class="card-body">
+            <canvas id="ventasChart"></canvas>
+        </div>
+    </div>
+
+    <hr>
+
+    <!-- TABLA DE PEDIDOS -->
+    <table class="table table-bordered table-hover mt-4">
+
+        <thead class="table-dark">
+            <tr>
+                <th>Nombre</th>
+                <th>Apellido</th>
+                <th>Correo</th>
+                <th>Sabor</th>
+                <th>Dirección</th>
+                <th>Hora</th>
+                <th>Cantidad</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+
+        <tbody>
+            <tr th:each="p : ${lista}">
+                <td th:text="${p.nombre}"></td>
+                <td th:text="${p.apellido}"></td>
+                <td th:text="${p.correo}"></td>
+                <td th:text="${p.sabor}"></td>
+                <td th:text="${p.direccion}"></td>
+                <td th:text="${p.hora}"></td>
+                <td th:text="${p.cantidad}"></td>
+                <td>
+                    <a th:href="@{/eliminarPedido/{id}(id=${p.id})}"
+                       class="btn btn-danger btn-sm">
+                        Eliminar
+                    </a>
+                    <a th:href="@{/descargarComprobante/{id}(id=${p.id})}"
+                       target="_blank"
+                       class="btn btn-success btn-sm">
+                        📄 PDF
+                    </a>
+                </td>
+            </tr>
+        </tbody>
+
+    </table>
+
+</div>
+
+<!-- Bootstrap JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<!-- EmailJS -->
+<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+
+<!-- MODO NOCHE -->
+<script>
+const btn = document.getElementById("toggleTheme");
+
+function updateIcon(theme) {
+    btn.textContent = theme === "dark" ? "🌙" : "☀️";
+}
+
+const savedTheme = localStorage.getItem("theme") || "dark";
+document.documentElement.setAttribute("data-bs-theme", savedTheme);
+updateIcon(savedTheme);
+
+btn.addEventListener("click", () => {
+    const current = document.documentElement.getAttribute("data-bs-theme");
+    const newTheme = current === "dark" ? "light" : "dark";
+    document.documentElement.setAttribute("data-bs-theme", newTheme);
+    localStorage.setItem("theme", newTheme);
+    updateIcon(newTheme);
+});
+</script>
+
+<!-- GRÁFICA CON PRECIOS Y TOTAL DE VENTAS -->
+<script th:inline="javascript">
+
+const ctx = document.getElementById('ventasChart');
+
+const sabores   = /*[[${sabores}]]*/ [];
+const cantidades = /*[[${cantidades}]]*/ [];
+
+// Precio por sabor
+const precios = {
+    'Hawaiana':    160,
+    'Pepperoni':   150,
+    'Mexicana':    170,
+    '4 Quesos':    180,
+    'Suprema':     190,
+    'Vegetariana': 190
+};
+
+// Total en dinero por sabor
+const totales = sabores.map((sabor, i) => {
+    const precio = precios[sabor] || 0;
+    return cantidades[i] * precio;
+});
+
+// Total general de ventas
+const totalGeneral = totales.reduce((a, b) => a + b, 0);
+
+// Mostrar total en el título
+document.getElementById('tituloReporte').textContent =
+    'Reporte de Ventas — Total: $' + totalGeneral.toLocaleString('es-MX') + ' MXN';
+
+// Color fijo por sabor
+const coloresPorSabor = {
+    'Mexicana':    '#ff6384',
+    'Hawaiana':    '#36a2eb',
+    'Vegetariana': '#4bc0c0',
+    'Suprema':     '#9966ff',
+    'Pepperoni':   '#ff9f40',
+    '4 Quesos':    '#ffce56'
+};
+
+const coloresFondo  = sabores.map(s => coloresPorSabor[s] || '#aaaaaa');
+const coloresBorde  = coloresFondo;
+
+new Chart(ctx, {
+    type: 'bar',
+    data: {
+        labels: sabores,
+        datasets: [
+            {
+                label: 'Pizzas vendidas',
+                data: cantidades,
+                backgroundColor: coloresFondo,
+                borderColor: coloresBorde,
+                borderWidth: 2,
+                yAxisID: 'y'
+            },
+            {
+                label: 'Total en ventas (MXN)',
+                data: totales,
+                backgroundColor: coloresFondo.map(c => c + '88'),
+                borderColor: coloresBorde,
+                borderWidth: 2,
+                borderDash: [5, 5],
+                yAxisID: 'y1'
+            }
+        ]
+    },
+    options: {
+        responsive: true,
+        plugins: {
+            legend: { display: true },
+            tooltip: {
+                callbacks: {
+                    afterBody: function(items) {
+                        const idx   = items[0].dataIndex;
+                        const sabor = sabores[idx];
+                        return [
+                            'Precio unitario: $' + (precios[sabor] || 0) + ' MXN',
+                            'Total: $' + totales[idx].toLocaleString('es-MX') + ' MXN'
+                        ];
+                    }
+                }
+            }
+        },
+        scales: {
+            y: {
+                beginAtZero: true,
+                position: 'left',
+                title: { display: true, text: 'Cantidad vendida' },
+                ticks: { precision: 0 }
+            },
+            y1: {
+                beginAtZero: true,
+                position: 'right',
+                title: { display: true, text: 'Ventas ($)' },
+                grid: { drawOnChartArea: false },
+                ticks: {
+                    callback: value => '$' + value.toLocaleString('es-MX') + ' MXN'
+                }
+            }
+        }
+    }
+});
+
+</script>
+
+<!-- EMAILJS -->
+<script>
+emailjs.init("MlFOkhGvQ7qvPvkda");
+
+document.getElementById("pedidoForm").addEventListener("submit", function (event) {
+    event.preventDefault();
+
+    emailjs.send(
+        "service_0k23ggg",
+        "template_gfrey7b",
+        {
+            nombre:    document.getElementById("nombre").value,
+            apellido:  document.getElementById("apellido").value,
+            correo:    document.getElementById("correo").value,
+            sabor:     document.getElementById("sabor").value,
+            direccion: document.getElementById("direccion").value,
+            hora:      document.getElementById("hora").value,
+            cantidad:  document.getElementById("cantidad").value
+        }
+    )
+    .then(function(response) {
+        console.log("Correo enviado correctamente", response);
+        alert("Pedido enviado al correo");
+        document.getElementById("pedidoForm").submit();
+    })
+    .catch(function(error) {
+        console.log("Error al enviar", error);
+        alert("No se pudo enviar el correo");
+    });
+});
+</script>
+
+</body>
+</html>

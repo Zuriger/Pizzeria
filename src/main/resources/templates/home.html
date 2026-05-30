@@ -1,0 +1,521 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="https://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lista de personas</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <style>
+        body {
+            margin: 0;
+            font-family: 'Georgia', serif;
+            background-color: #000000;
+            color: #fff;
+        }
+        header {
+            background: url("imag/imagen1.jpeg") no-repeat center/cover;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+        }
+        header h1 {
+            font-size: 4em;
+            margin: 0;
+            letter-spacing: 3px;
+        }
+        header p {
+                font-size: 1.5em;
+                margin-top: 20px;
+                color: #f8f9fa;
+        }
+        
+        nav {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            background: rgba(0,0,0,0.8);
+            padding: 10px;
+            text-align: center;
+        }
+
+        nav a {
+            color: #fff;
+            margin: 0 15px;
+            text-decoration: none;
+            font-weight: bold;
+        }    
+
+
+        /* FLIP CARD */
+.flip-card {
+    background: transparent;
+    width: 100%;
+    height: 320px;
+    perspective: 1000px;
+}
+
+.flip-card-inner {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    transition: transform 0.9s;
+    transform-style: preserve-3d;
+}
+
+.flip-card:hover .flip-card-inner {
+    transform: rotateY(180deg);
+}
+
+.flip-card-front,
+.flip-card-back {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    border-radius: 15px;
+    overflow: hidden;
+    backface-visibility: hidden;
+    box-shadow: 0 8px 20px rgba(255,255,255,0.1);
+}
+
+.flip-card-front {
+    background: #111;
+    color: white;
+}
+
+.flip-card-front img {
+    width: 100%;
+    height: 250px;
+    object-fit: cover;
+}
+
+.flip-card-front h4 {
+    padding: 10px;
+    text-align: center;
+}
+
+.flip-card-back {
+    background: #c62828;
+    color: white;
+    transform: rotateY(180deg);
+    padding: 20px;
+    text-align: center;
+}
+
+.flip-card-back h4 {
+    margin-top: 20px;
+}
+
+.flip-card-back span {
+    font-size: 24px;
+    color: #ffd54f;
+    font-weight: bold;
+}
+
+/* ESTILOS DEL MAPA */
+     .ubicacion {
+            padding: 60px 20px;
+            text-align: center;
+            background-color: #111;
+      }
+
+  #mapa {
+            height: 480px;
+            width: 100%;
+            border-radius: 16px;
+            box-shadow: 0 0 25px rgba(230, 57, 70, 0.25);
+            border: 2px solid #222;
+    }
+    .carousel-caption{
+        text-shadow: 5px 5px 12px rgba(0,0,0,0.8);
+        -webkit-text-fill-color: #ffffff;
+        
+    }
+
+    html {
+    scroll-behavior: smooth;
+}
+
+</style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container-fluid">
+            <a class="navbar-brand" th:href="@{/}">Bona Pizza</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav">
+                    <li class="nav-item">
+                        <a class="nav-link active" th:href="@{/}">Inicio</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" th:href="@{/personas}">Reservación</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#historia">Historia</a>
+                    </li>
+                </ul>
+                
+                <div class="ms-auto d-flex align-items-center gap-3">
+        <span class="text-white fw-bold">📞 773 123 4567</span>
+
+        <button id="toggleTheme" class="btn btn-outline-light">
+        🌙
+        </button>
+    </div>
+            </div>
+        </div>
+    </nav>
+
+     <!-- Carrusel con tres imágenes -->
+    <div id="carouselExample" class="carousel slide mt-4" data-bs-ride="carousel">
+  
+    <!-- Indicadores (los puntitos abajo) -->
+    <div id="carouselExample" class="carousel slide mt-4" data-bs-ride="carousel" data-bs-interval="3000">
+
+    <div class="carousel-inner">
+
+        <div class="carousel-item active">
+            <img src="/img/rest1.jpg" class="d-block w-100" style="height:400px; object-fit:cover;">
+            <div class="carousel-caption d-none d-md-block">
+            <h1>Bienvenido a Bona Pizza</h1>
+            <h4>Tradición Italiana</h4>
+            </div>
+        </div>
+
+        <div class="carousel-item">
+            <img src="/img/imagen4.jpeg" class="d-block w-100" style="height:400px; object-fit:cover;">
+            <div class="carousel-caption d-none d-md-block">
+            <h2>Más que pizza, compartimos momentos.</h2>
+            </div>
+        </div>
+
+        <div class="carousel-item">
+            <img src="/img/rest3.jpg" class="d-block w-100" style="height:400px; object-fit:cover;">
+            <div class="carousel-caption d-none d-md-block">
+            <h2>Ingredientes frescos y recetas auténticas </h2>
+           
+            </div>
+        </div>
+
+    </div>
+
+    <button class="carousel-control-prev" type="button" data-bs-target="#carouselExample" data-bs-slide="prev">
+        <span class="carousel-control-prev-icon"></span>
+    </button>
+
+    <button class="carousel-control-next" type="button" data-bs-target="#carouselExample" data-bs-slide="next">
+        <span class="carousel-control-next-icon"></span>
+    </button>
+</div>
+
+<div class="container mt-5 text-center">
+    <div class="p-5 rounded-4 text-white"
+         style="background: linear-gradient(45deg, #b71c1c, #2b1414);">
+
+        <h2 class="fw-bold">¿Listo para probar la mejor pizza? </h2>
+
+        <p class="mt-3">
+            Reserva tu mesa ahora y vive la experiencia Bona Pizza.
+        </p>
+
+        <a class="btn btn-light btn-lg mt-3"
+           th:href="@{/personas}">
+            Reservar ahora
+        </a>
+        <a class="btn btn-light btn-lg mt-3"
+   th:href="@{/pedidos}">
+
+    Realizar pedido
+
+</a>
+    </div>
+</div>
+
+
+<!-- SECCIÓN MENÚ FLIP CARD -->
+<section class="container py-5">
+    <h2 class="text-center mb-5 text-white">Nuestro Menú</h2>
+
+    <div class="row g-4">
+
+        <!-- Pizza 1 -->
+        <div class="col-md-4">
+            <div class="flip-card">
+                <div class="flip-card-inner">
+
+                    <!-- Frente -->
+                    <div class="flip-card-front">
+                        <img src="/img/peperoni.jpeg" class="img-fluid">
+                        <h4>Pepperoni</h4>
+                    </div>
+
+                    <!-- Atrás -->
+                    <div class="flip-card-back">
+                        <h4>Pizza Pepperoni</h4>
+                        <p>Queso mozzarella y pepperoni premium.</p>
+                        <span>$150</span>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+        <!-- Pizza 2 -->
+        <div class="col-md-4">
+            <div class="flip-card">
+                <div class="flip-card-inner">
+
+                    <div class="flip-card-front">
+                        <img src="/img/imagen5.jpeg" class="img-fluid">
+                        <h4>Hawaiana</h4>
+                    </div>
+
+                    <div class="flip-card-back">
+                        <h4>Pizza Hawaiana</h4>
+                        <p>Jamón, piña y queso gratinado.</p>
+                        <span>$160</span>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+        <!-- Pizza 3 -->
+        <div class="col-md-4">
+            <div class="flip-card">
+                <div class="flip-card-inner">
+
+                    <div class="flip-card-front">
+                        <img src="/img/imagen8.jpg" class="img-fluid">
+                        <h4>Mexicana</h4>
+                    </div>
+
+                    <div class="flip-card-back">
+                        <h4>Pizza Mexicana</h4>
+                        <p>Chorizo, jalapeño y cebolla.</p>
+                        <span>$170</span>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+        <!-- Pizza 4 -->
+        <div class="col-md-4">
+            <div class="flip-card">
+                <div class="flip-card-inner">
+
+                    <div class="flip-card-front">
+                        <img src="/img/4quesos.jpeg" class="img-fluid">
+                        <h4>4 Quesos</h4>
+                    </div>
+
+                    <div class="flip-card-back">
+                        <h4>Pizza 4 Quesos</h4>
+                        <p>Mozzarella, cheddar, parmesano y gouda.</p>
+                        <span>$180</span>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+        <!-- Pizza 5 -->
+        <div class="col-md-4">
+            <div class="flip-card">
+                <div class="flip-card-inner">
+
+                    <div class="flip-card-front">
+                        <img src="/img/margharita.jpeg" class="img-fluid">
+                        <h4>Suprema</h4>
+                    </div>
+
+                    <div class="flip-card-back">
+                        <h4>Pizza Margherita</h4>
+                        <p>Mozzarella. Hojas frescas de albahaca y Aceite de oliva al gusto</p>
+                        <span>$190</span>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+                <!-- Pizza 6 -->
+        <div class="col-md-4">
+            <div class="flip-card">
+                <div class="flip-card-inner">
+
+                    <div class="flip-card-front">
+                        <img src="/img/veg.jpg" class="img-fluid">
+                        <h4>Vegetariana</h4>
+                    </div>
+
+                    <div class="flip-card-back">
+                        <h4>Pizza Vegetariana</h4>
+                        <p>Verduras: Champiñones, pimientos (verdes, rojos), cebolla (blanca o morada), calabacín (en rodajas), tomates, aceitunas negras, alcachofas.
+                            Quesos: Mozzarella (búfala), parmesano.</p>
+                        <span>$190</span>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+    </div>
+</section>
+
+<!--CHEFS-->
+<section id="historia" class="container py-5 text-white">
+
+    <div class="text-center mb-5">
+        <h2 class="fw-bold">Nuestra Historia </h2>
+        <p class="text-secondary">
+            Bona Pizza nace del amor por la cocina italiana y el deseo de compartir momentos inolvidables alrededor de la mesa.
+        </p>
+    </div>
+
+    <div class="row align-items-center mb-5">
+        <div class="col-md-6">
+            <h4>Tradición y pasión</h4>
+            <p>
+                Nuestra pizzería nació de un sueño sencillo: compartir el sabor auténtico de la pizza con la comunidad. Todo comenzó con un pequeño horno y una receta familiar transmitida de generación en generación. 
+                El aroma del pan recién horneado y el queso fundido pronto atrajo a vecinos y amigos, quienes encontraron en este lugar no solo un platillo delicioso, 
+                sino también un espacio para convivir y crear recuerdos. Con el tiempo, incorporamos ingredientes premium como el pepperoni artesanal y la mozzarella fresca, 
+                cuidando cada detalle para que cada pizza sea una experiencia única. Hoy, seguimos fieles a nuestra esencia: un rincón donde cada visita se convierte en un momento especial, 
+                y cada rebanada cuenta una historia de pasión, tradición y comunidad
+            </p>
+            <p>
+                Cada pizza es preparada con cuidado, como si fuera única, porque para nosotros lo es.
+            </p>
+        </div>
+
+        <div class="col-md-6 text-center">
+            <img src="/img/rest3.jpg" class="img-fluid rounded-4 shadow" style="max-height:300px; object-fit:cover;">
+        </div>
+    </div>
+
+    <div class="text-center mb-4">
+        <h3 class="fw-bold">Nuestros Chefs </h3>
+    </div>
+
+    <div class="row g-4">
+
+        <!-- Chef 1 -->
+        <div class="col-md-6">
+            <div class="card bg-dark text-white text-center p-4 rounded-4 shadow">
+                <img src="/img/chef1.jpeg"
+                     class="rounded-circle mx-auto mb-3"
+                     style="width:120px; height:120px; object-fit:cover;">
+
+                <h5>Chef Marco Rossi</h5>
+                <p class="text-secondary">
+                    Especialista en cocina italiana tradicional. Más de 15 años creando pizzas artesanales.
+                </p>
+            </div>
+        </div>
+
+        <!-- Chef 2 -->
+        <div class="col-md-6">
+            <div class="card bg-dark text-white text-center p-4 rounded-4 shadow">
+                <img src="/img/chef2.jpeg"
+                     class="rounded-circle mx-auto mb-3"
+                     style="width:120px; height:120px; object-fit:cover;">
+
+                <h5>Chef Lucia Bianchi</h5>
+                <p class="text-secondary">
+                    Experta en ingredientes frescos y combinaciones gourmet con toque moderno.
+                </p>
+            </div>
+        </div>
+
+    </div>
+</section>
+
+<!-- SECCIÓN UBICACIÓN CON MAPA -->
+<div id="ubicacion" class="ubicacion">
+    <div class="container">
+        <h2 class="mb-4">¿Dónde estamos? 📍</h2>
+        <p class="mb-4 fs-5 text-secondary">Encuéntranos fácilmente, estamos listos para atenderte</p>
+        
+        <!-- Contenedor del mapa -->
+        <div id="mapa"></div>
+
+        <div class="mt-4 p-3 bg-dark rounded-3 border border-secondary">
+            <p class="mb-1 fs-5"><strong>Dirección:</strong> Calle Salvador Díaz Mirón,Tezoquipa , Atitalaquia, Hidalgo</p>
+            <p class="mb-0 text-secondary"><strong>Horario:</strong> Lunes a Domingo de 12:00 PM - 10:00 PM</p>
+        </div>
+    </div>
+</div>
+
+
+
+    <footer class="bg-dark text-white text-center py-3 mt-5">
+        <p>&copy; 2026 Bona Pizza. Todos los derechos reservados.</p>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+<script>
+  
+    const LATITUD = 20.056208;    
+    const LONGITUD = -99.198437;
+
+    // Inicializar mapa
+    const mapa = L.map('mapa').setView([LATITUD, LONGITUD], 18.5);
+
+    
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+        maxZoom: 18
+    }).addTo(mapa);
+
+    // 📍 MARCADOR PERSONALIZADO
+    const marcador = L.icon({
+        iconUrl: 'https://cdn-icons-png.flaticon.com/512/684/684908.png',
+        iconSize: [40, 40],
+        iconAnchor: [20, 40],
+        popupAnchor: [0, -40]
+    });
+
+    // Agregar marcador y ventana de información
+    L.marker([LATITUD, LONGITUD], {icon: marcador})
+     .addTo(mapa)
+     .bindPopup(`
+        <h5> Domus Pizza</h5>
+        <p>Calle Salvador Díaz Mirón<br><b>Te esperamos!</b></p>
+     `, {maxWidth: 280})
+     .openPopup();
+</script>
+
+    <script>
+    const btn = document.getElementById("toggleTheme");
+
+    function updateIcon(theme) {
+        btn.textContent = theme === "dark" ? "🌙" : "☀️";
+    }
+
+    // Cargar tema guardado
+    const savedTheme = localStorage.getItem("theme") || "dark";
+    document.documentElement.setAttribute("data-bs-theme", savedTheme);
+    updateIcon(savedTheme);
+
+    btn.addEventListener("click", () => {
+        const current = document.documentElement.getAttribute("data-bs-theme");
+        const newTheme = current === "dark" ? "light" : "dark";
+
+        document.documentElement.setAttribute("data-bs-theme", newTheme);
+        localStorage.setItem("theme", newTheme);
+        updateIcon(newTheme);
+    });
+</script>
+
+
+</body>
+</html>
